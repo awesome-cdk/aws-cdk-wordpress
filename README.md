@@ -1,1 +1,1 @@
-# aws-cdk-wordpress
+# Serverless WordPress with EFS support
