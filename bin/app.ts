@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
-import {AwsCdkWordpressStack} from '../lib/aws-cdk-wordpress-stack';
 import {ServerlessWordpressApp} from "../lib/stacks/ServerlessWordpressApp";
 import {ElasticContainerService} from "../lib/stacks/ElasticContainerService";
 import {ElasticFileSystem} from "../lib/stacks/ElasticFileSystem";
@@ -25,7 +24,4 @@ const serverlessWordpressApp = new ServerlessWordpressApp(app, 'ServerlessWordpr
     cluster: elasticContainerService.cluster,
     fileSystem: elasticFileSystem.fileSystem,
     fileSystemSecurityGroup: elasticFileSystem.securityGroup,
-});
-new AwsCdkWordpressStack(app, 'AwsCdkWordpressStack3', {
-    env,
 });
