@@ -24,4 +24,5 @@ const serverlessWordpressApp = new ServerlessWordpressApp(app, 'ServerlessWordpr
     cluster: elasticContainerService.cluster,
     fileSystem: elasticFileSystem.fileSystem,
     fileSystemSecurityGroup: elasticFileSystem.securityGroup,
+    loadBalancer: applicationLoadBalancer.loadBalancer,
 });

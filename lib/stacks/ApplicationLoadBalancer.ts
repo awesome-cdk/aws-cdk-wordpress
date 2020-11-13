@@ -20,16 +20,5 @@ export class ApplicationLoadBalancer extends Stack {
             internetFacing: true
         });
 
-        // Add a listener and open up the load balancer's security group
-        // to the world.
-        // this.listener = this.loadBalancer.addListener('HTTPListener', {
-        //     port: 80,
-        //
-        //     // 'open: true' is the default, you can leave it out if you want. Set it
-        //     // to 'false' and use `listener.connections` if you want to be selective
-        //     // about who can access the load balancer.
-        //     open: true,
-        // });
-
     }
 }

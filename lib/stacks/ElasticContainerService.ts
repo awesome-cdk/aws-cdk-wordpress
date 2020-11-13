@@ -35,7 +35,7 @@ export class ElasticContainerService extends Stack {
         });
         this.spotFleet = this.cluster.addCapacity('AsgSpot', {
             maxCapacity: 10,
-            minCapacity: 3,
+            minCapacity: 5,
             instanceType: new InstanceType('t3a.nano'),
             spotPrice: '0.0046',
             spotInstanceDraining: true,
@@ -43,7 +43,7 @@ export class ElasticContainerService extends Stack {
             taskDrainTime: Duration.seconds(30),
         });
 
-        // Allow Systems Manager connections
+        // Allow Systems Manager connections (e.g. for debugging)
         this.spotFleet.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'))
 
         // Wait for EFS to be created before the EC2 instances are created
@@ -54,7 +54,9 @@ export class ElasticContainerService extends Stack {
         // The EFS has this security group "whitelisted" for ingress
         this.spotFleet.addSecurityGroup(props.fileSystemSecurityGroup);
 
-        this.spotFleet.addUserData("yum check-update -y",    // Ubuntu: apt-get -y update
+        // Mount the EFS to the EC2 instances within this fleet
+        this.spotFleet.addUserData(
+            "yum check-update -y",    // Ubuntu: apt-get -y update
             "yum upgrade -y",                                 // Ubuntu: apt-get -y upgrade
             "yum install -y amazon-efs-utils",                // Ubuntu: apt-get -y install amazon-efs-utils
             "yum install -y nfs-utils",                       // Ubuntu: apt-get -y install nfs-common
@@ -64,9 +66,7 @@ export class ElasticContainerService extends Stack {
             "test -f \"/sbin/mount.efs\" && echo \"${file_system_id_1}:/ ${efs_mount_point_1} efs defaults,_netdev\" >> /etc/fstab || " +
             "echo \"${file_system_id_1}.efs." + Stack.of(this).region + ".amazonaws.com:/ ${efs_mount_point_1} nfs4 nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport,_netdev 0 0\" >> /etc/fstab",
             "mount -a -t efs,nfs4 defaults",
-            "sudo chmod go+rw /mnt/efs/fs1");
-
-        // spotFleet.connections.allowFromAnyIpv4(Port.allTraffic());
-        // spotFleet.connections.allowToAnyIpv4(Port.allTraffic());
+            "sudo chmod go+rw /mnt/efs/fs1",
+        );
     }
 }
