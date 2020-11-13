@@ -43,6 +43,9 @@ export class ElasticContainerService extends Stack {
             taskDrainTime: Duration.seconds(30),
         });
 
+        // Allow the EC2 instances to receive updates etc
+        this.spotFleet.connections.allowToAnyIpv4(Port.allTraffic());
+
         // Allow Systems Manager connections (e.g. for debugging)
         this.spotFleet.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'))
 

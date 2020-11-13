@@ -17,7 +17,8 @@ export class ApplicationLoadBalancer extends Stack {
         // by default, which creates an internal load balancer.
         this.loadBalancer = new ALB(this, 'LB', {
             vpc,
-            internetFacing: true
+            internetFacing: true,
+            http2Enabled: false,
         });
 
     }

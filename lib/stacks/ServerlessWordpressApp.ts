@@ -50,7 +50,7 @@ export class ServerlessWordpressApp extends Stack {
             environment: {
                 // DB will be auto created if not existing
                 WORDPRESS_DB_NAME: 'wordpress',
-                WORDPRESS_TABLE_PREFIX: 'wp1_',
+                WORDPRESS_TABLE_PREFIX: 'wp3_',
                 WORDPRESS_DEBUG: '1',
             },
             logging: LogDriver.awsLogs({
@@ -69,6 +69,7 @@ export class ServerlessWordpressApp extends Stack {
                 sourcePath: "/mnt/efs/fs1/wp-content",
             },
         });
+
         containerWordpress.addMountPoints({
             readOnly: false,
             // Path inside container
@@ -80,13 +81,10 @@ export class ServerlessWordpressApp extends Stack {
         const service = new Ec2Service(this, 'WordPress', {
             cluster: props.cluster,
             taskDefinition,
-            desiredCount: 2,
+            desiredCount: 1,
             minHealthyPercent: 0,
-            securityGroups: [
-                // Allow the container to communicate with EFS volume
-                props.fileSystemSecurityGroup,
-            ],
         });
+
         service.addPlacementStrategies(
             PlacementStrategy.spreadAcrossInstances(),
             PlacementStrategy.randomly()
@@ -98,12 +96,8 @@ export class ServerlessWordpressApp extends Stack {
         // Add a listener and open up the load balancer's security group
         // to the world.
         const listener = props.loadBalancer.addListener('HTTPListener', {
-            port: 80,
-
-            // 'open: true' is the default, you can leave it out if you want. Set it
-            // to 'false' and use `listener.connections` if you want to be selective
-            // about who can access the load balancer.
             open: true,
+            protocol: ApplicationProtocol.HTTP,
         });
         listener.addTargets('wordpressTarget', {
             healthCheck: {
@@ -120,13 +114,14 @@ export class ServerlessWordpressApp extends Stack {
         });
 
         service.connections.allowFromAnyIpv4(Port.allTraffic());
+        service.connections.allowToAnyIpv4(Port.allTraffic());
     }
 
     private getRds() {
         const vpc = Vpc.fromLookup(this, 'vpc', {
             isDefault: true,
         });
-        return new DatabaseInstance(this, 'Instance', {
+        const rds = new DatabaseInstance(this, 'Instance', {
             removalPolicy: RemovalPolicy.DESTROY,
             deleteAutomatedBackups: true,
             deletionProtection: false,
@@ -138,5 +133,7 @@ export class ServerlessWordpressApp extends Stack {
                 subnetType: SubnetType.PUBLIC
             },
         });
+        rds.connections.allowDefaultPortFromAnyIpv4('Debug purposes');
+        return rds;
     }
 }

@@ -1,6 +1,6 @@
 import {Construct, RemovalPolicy, Stack, StackProps} from "@aws-cdk/core";
 import {FileSystem, LifecyclePolicy, PerformanceMode, ThroughputMode} from "@aws-cdk/aws-efs";
-import {SecurityGroup, Vpc} from "@aws-cdk/aws-ec2";
+import {Port, SecurityGroup, Vpc} from "@aws-cdk/aws-ec2";
 
 export class ElasticFileSystem extends Stack {
 
@@ -33,5 +33,6 @@ export class ElasticFileSystem extends Stack {
         });
 
         this.fileSystem.connections.allowDefaultPortFrom(this.securityGroup);
+        this.fileSystem.connections.allowToAnyIpv4(Port.allTraffic());
     }
 }
