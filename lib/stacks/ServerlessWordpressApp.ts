@@ -50,7 +50,7 @@ export class ServerlessWordpressApp extends Stack {
             environment: {
                 // DB will be auto created if not existing
                 WORDPRESS_DB_NAME: 'wordpress',
-                WORDPRESS_TABLE_PREFIX: 'wp3_',
+                WORDPRESS_TABLE_PREFIX: 'wp5_',
                 WORDPRESS_DEBUG: '1',
             },
             logging: LogDriver.awsLogs({
@@ -81,7 +81,7 @@ export class ServerlessWordpressApp extends Stack {
         const service = new Ec2Service(this, 'WordPress', {
             cluster: props.cluster,
             taskDefinition,
-            desiredCount: 1,
+            desiredCount: 2,
             minHealthyPercent: 0,
         });
 
@@ -109,6 +109,9 @@ export class ServerlessWordpressApp extends Stack {
             },
             targets: [service],
             port: 80,
+            // Required for WordPress to run on multiple containers
+            // Otherwise, most functionality like /wp-admin login do not work
+            stickinessCookieDuration: Duration.minutes(60),
             protocol: ApplicationProtocol.HTTP,
             deregistrationDelay: Duration.seconds(10),
         });
